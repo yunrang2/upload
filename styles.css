@@ -5,9 +5,30 @@
   font-style: normal;
 }
 
+#rightImage {
+  transition: transform 0.2s ease-in-out; /* 트랜지션 효과 적용 */
+}
+
+#rightImage:hover {
+  transform: scale(1.1); /* 마우스 호버 시 이미지 크기 조정 */
+}
+
+#startImage {
+  width: 500px;
+  height: auto;
+  position: fixed;
+  bottom: 20px; /* 조정 가능한 값 */
+  right: calc(50% - 250px); /* 화면 가로 중앙에서 250px만큼 오른쪽으로 이동 */
+  transition: transform 0.2s ease-in-out; /* 변화에 transition 효과 적용 */
+}
+
+#startImage:hover {
+  transform: scale(1.1); /* 마우스를 올릴 때 이미지를 약간 확대 */
+}
+
 body {
-  width: 1080px;
-  height: 2500px;
+  width: 1920px;
+  height: 1080px;
   margin: 0 auto;
   overflow: hidden;
   background-color: #00FF00;
