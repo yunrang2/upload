@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sample Page</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             margin: 0;
@@ -24,26 +25,22 @@
           height: 200px; /* 세로 크기 설정 */
           position: fixed;
           bottom: 0;
-          right: 0;*/
-          transition: transform 0.2s ease-in-out; /* 마우스 호버 시 애니메이션 효과 설정 */
-          margin-right: 0; /* 오른쪽 여백 제거 */
+          right: 0;
         }
-        #rightImage:hover {
-            transform: scale(1.1); /* 마우스 호버 시 이미지를 약간 키우는 효과 설정 */
-        }
+
     </style>
 </head>
 <body>
     <!-- 왼쪽 이미지 (킴프로님 미션판) -->
-    <img id="leftImage" src="D:/Webmenu/킴프로님 미션판.png" alt="킴프로님 미션판">
+    <img id="leftImage" src="https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/mainmission.png" alt="킴프로님 미션판">
     
     <!-- 오른쪽 이미지 (게임!) -->
-    <img id="rightImage" src="D:/Webmenu/게임!.png" alt="게임!">
+    <img id="rightImage" src="https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/게임!.png" alt="게임!">
 
     <script>
         document.getElementById('rightImage').addEventListener('click', function() {
             // 게임 이미지 클릭 시 음악 재생 및 추가 작업 수행
-            var audio = new Audio('D:/Webmenu/y2mate.com - 싸늘하다 1시간.mp3');
+            var audio = new Audio('https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/Intro.mp3');
             audio.volume = 0.5; // 볼륨 설정
             audio.play();
 // 게임 이미지와 기존 이미지들 숨기기
@@ -52,13 +49,13 @@
 
                         // 게임 미션판 이미지 추가
             var gameMissionImage = document.createElement('img');
-            gameMissionImage.src = 'D:/Webmenu/게임 미션판.png';
+            gameMissionImage.src = 'https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/게임_미션판.png';
             gameMissionImage.style.width = '20vw'; // 창의 가로 크기의 20%
             gameMissionImage.style.height = '100vh'; // 창의 세로 크기와 동일
             document.body.appendChild(gameMissionImage);
             // 돌아가기 이미지 추가
             var backImage = document.createElement('img');
-            backImage.src = 'D:/Webmenu/돌아가기.png';
+            backImage.src = 'https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/돌아가기.png';
             backImage.style.width = '300px'; // 가로 크기를 400px로 설정
             backImage.style.height = 'auto';
             backImage.style.position = 'fixed';
@@ -88,15 +85,14 @@
             });
             // 게임 스타트 이미지 추가
             var startImage = document.createElement('img');
-            startImage.src = 'D:/Webmenu/게임 스타트.png';
-            startImage.style.width = '400px';
+            startImage.src = 'https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/게임_스타트.png';
+            startImage.style.width = '500px';
             startImage.style.height = 'auto';
             startImage.style.position = 'fixed';
-            startImage.style.bottom = '0';
+            startImage.style.bottom = '0'; // 아래에서 50px 떨어진 위치로 설정
             startImage.style.left = '50%';
             startImage.style.transform = 'translateX(-50%)';
             document.body.appendChild(startImage);
-            startImage.style.transition = 'transform 0.2s ease-in-out'
 
             startImage.addEventListener('click', function() {
               // 게임 스타트 이미지 클릭 시 실행될 코드
@@ -108,7 +104,7 @@
           
               // GIF 이미지 추가
               var gameInProgressImage = document.createElement('img');
-              gameInProgressImage.src = 'D:/Webmenu/게임중.gif';
+              gameInProgressImage.src = 'https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/게임중.gif';
               gameInProgressImage.style.position = 'fixed';
               gameInProgressImage.style.bottom = '0';
               gameInProgressImage.style.left = '50%';
@@ -119,17 +115,16 @@
               audio.pause();
 
                 // 새로운 노래 선택
-              var randomIndex = Math.floor(Math.random() * 2); // 0 또는 1 중에서 랜덤으로 선택
-              var newAudioSrc = randomIndex === 0 ? 'D:/Webmenu/타짜 - 신의손.mp3' : 'D:/Webmenu/테트리스 BGM.mp3';
+                var newAudioSrc = 'https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/신의손.mp3';
 
                 // 새로운 노래 재생
               var newAudio = new Audio(newAudioSrc);
-              newAudio.volume = 0.5; // 볼륨 설정
+              newAudio.volume = 0.2; // 볼륨 설정
               newAudio.play();
           
               // 이전의 돌아가기 이미지를 지우고 새로운 돌아가기 이미지 생성
               var newBackImage = document.createElement('img');
-              newBackImage.src = 'D:/Webmenu/돌아가기.png';
+              newBackImage.src = 'https://raw.githubusercontent.com/yunrang2/yunrang2.github.io/master/돌아가기.png';
               newBackImage.style.width = '300px'; // 가로 크기를 400px로 설정
               newBackImage.style.height = 'auto';
               newBackImage.style.position = 'fixed';
