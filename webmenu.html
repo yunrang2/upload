@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Page</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: green; /* 배경색 설정 */
+            width: 1920px; /* 창 너비 설정 */
+            height: 1080px; /* 창 높이 설정 */
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end; /* 아래쪽 정렬 설정 */
+        }
+        #leftImage {
+          height: 100%; /* 창의 높이로 설정 */
+          max-width: 100%; /* 이미지가 창 안에 맞게 비율 유지하도록 설정 */
+          object-fit: contain; /* 이미지가 창 안에 맞게 비율 유지하도록 설정 */
+        }
+        #rightImage {
+          width: 200px; /* 가로 크기 설정 */
+          height: 200px; /* 세로 크기 설정 */
+          position: fixed;
+          bottom: 0;
+          right: 0;*/
+          transition: transform 0.2s ease-in-out; /* 마우스 호버 시 애니메이션 효과 설정 */
+          margin-right: 0; /* 오른쪽 여백 제거 */
+        }
+        #rightImage:hover {
+            transform: scale(1.1); /* 마우스 호버 시 이미지를 약간 키우는 효과 설정 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 왼쪽 이미지 (킴프로님 미션판) -->
+    <img id="leftImage" src="D:/Webmenu/킴프로님 미션판.png" alt="킴프로님 미션판">
+    
+    <!-- 오른쪽 이미지 (게임!) -->
+    <img id="rightImage" src="D:/Webmenu/게임!.png" alt="게임!">
+
+    <script>
+        document.getElementById('rightImage').addEventListener('click', function() {
+            // 게임 이미지 클릭 시 음악 재생 및 추가 작업 수행
+            var audio = new Audio('D:/Webmenu/y2mate.com - 싸늘하다 1시간.mp3');
+            audio.volume = 0.5; // 볼륨 설정
+            audio.play();
+// 게임 이미지와 기존 이미지들 숨기기
+            document.getElementById('leftImage').style.display = 'none';
+            document.getElementById('rightImage').style.display = 'none';
+
+                        // 게임 미션판 이미지 추가
+            var gameMissionImage = document.createElement('img');
+            gameMissionImage.src = 'D:/Webmenu/게임 미션판.png';
+            gameMissionImage.style.width = '20vw'; // 창의 가로 크기의 20%
+            gameMissionImage.style.height = '100vh'; // 창의 세로 크기와 동일
+            document.body.appendChild(gameMissionImage);
+            // 돌아가기 이미지 추가
+            var backImage = document.createElement('img');
+            backImage.src = 'D:/Webmenu/돌아가기.png';
+            backImage.style.width = '300px'; // 가로 크기를 400px로 설정
+            backImage.style.height = 'auto';
+            backImage.style.position = 'fixed';
+            backImage.style.top = '0';
+            backImage.style.right = '0';
+            document.body.appendChild(backImage);
+            backImage.addEventListener('mouseenter', function() {
+                backImage.style.transform = 'scale(1.1)'; // 이미지를 약간 키웁니다.
+            });
+          
+            backImage.addEventListener('mouseleave', function() {
+                backImage.style.transform = 'scale(1)'; // 마우스가 벗어나면 다시 원래 크기로 돌아갑니다.
+            });
+            // 돌아가기 이미지 클릭 시 초기 이미지로 되돌아감
+            backImage.addEventListener('click', function() {
+                // 새로 추가한 이미지 요소들을 제거
+                document.body.removeChild(startImage)
+                document.body.removeChild(gameMissionImage);
+                document.body.removeChild(backImage);
+
+                // 기존의 이미지들을 다시 표시
+                document.getElementById('leftImage').style.display = 'initial';
+                document.getElementById('rightImage').style.display = 'initial';
+
+                // 노래 정지
+                audio.pause();
+            });
+            // 게임 스타트 이미지 추가
+            var startImage = document.createElement('img');
+            startImage.src = 'D:/Webmenu/게임 스타트.png';
+            startImage.style.width = '400px';
+            startImage.style.height = 'auto';
+            startImage.style.position = 'fixed';
+            startImage.style.bottom = '0';
+            startImage.style.left = '50%';
+            startImage.style.transform = 'translateX(-50%)';
+            document.body.appendChild(startImage);
+            startImage.style.transition = 'transform 0.2s ease-in-out'
+
+            startImage.addEventListener('click', function() {
+              // 게임 스타트 이미지 클릭 시 실행될 코드
+          
+              // 게임 스타트 이미지와 게임 미션판 이미지 숨기기
+              document.body.removeChild(startImage)
+              document.body.removeChild(gameMissionImage)
+              document.body.removeChild(backImage)
+          
+              // GIF 이미지 추가
+              var gameInProgressImage = document.createElement('img');
+              gameInProgressImage.src = 'D:/Webmenu/게임중.gif';
+              gameInProgressImage.style.position = 'fixed';
+              gameInProgressImage.style.bottom = '0';
+              gameInProgressImage.style.left = '50%';
+              gameInProgressImage.style.transform = 'translateX(-50%)';
+              document.body.appendChild(gameInProgressImage);
+
+                  // 노래 정지
+              audio.pause();
+
+                // 새로운 노래 선택
+              var randomIndex = Math.floor(Math.random() * 2); // 0 또는 1 중에서 랜덤으로 선택
+              var newAudioSrc = randomIndex === 0 ? 'D:/Webmenu/타짜 - 신의손.mp3' : 'D:/Webmenu/테트리스 BGM.mp3';
+
+                // 새로운 노래 재생
+              var newAudio = new Audio(newAudioSrc);
+              newAudio.volume = 0.5; // 볼륨 설정
+              newAudio.play();
+          
+              // 이전의 돌아가기 이미지를 지우고 새로운 돌아가기 이미지 생성
+              var newBackImage = document.createElement('img');
+              newBackImage.src = 'D:/Webmenu/돌아가기.png';
+              newBackImage.style.width = '300px'; // 가로 크기를 400px로 설정
+              newBackImage.style.height = 'auto';
+              newBackImage.style.position = 'fixed';
+              newBackImage.style.top = '0';
+              newBackImage.style.right = '0';
+              document.body.appendChild(newBackImage);
+              newBackImage.addEventListener('mouseenter', function() {
+                  newBackImage.style.transform = 'scale(1.1)'; // 이미지를 약간 키웁니다.
+              });
+              newBackImage.addEventListener('mouseleave', function() {
+                  newBackImage.style.transform = 'scale(1)'; // 마우스가 벗어나면 다시 원래 크기로 돌아갑니다.
+              });
+          
+              // 새로운 돌아가기 이미지 클릭 시 실행될 코드
+              newBackImage.addEventListener('click', function() {
+                  // 새로 추가한 이미지 요소들을 제거
+                  document.body.removeChild(gameInProgressImage);
+                  document.body.removeChild(newBackImage);
+          
+                  // 기존의 이미지들을 다시 표시
+                  document.getElementById('leftImage').style.display = 'initial';
+                  document.getElementById('rightImage').style.display = 'initial';
+          
+                  // 노래 정지
+                  
+                  if (newAudio) {
+                    newAudio.pause();
+                }
+
+              })
+            });
+        });
+    </script>
+</body>
+</html>

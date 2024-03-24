@@ -1,0 +1,49 @@
+@font-face {
+  font-family: 'TTHakgyoansimMonggeulmonggeulR';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2402_keris@1.0/TTHakgyoansimMonggeulmonggeulR.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  width: 1080px;
+  height: 2500px;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: #00FF00;
+  font-family: 'TTHakgyoansimMonggeulmonggeulR', sans-serif;
+}
+
+header {
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav li {
+  display: inline;
+  margin-right: 10px;
+}
+
+nav a {
+  color: #333;
+  text-decoration: none;
+}
+
+main {
+  padding: 20px;
+}
+
+footer {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+}

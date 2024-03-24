@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Player</title>
+</head>
+<body>
+    <!-- 오디오 태그 -->
+    <audio id="audioPlayer" src="D:/Webmenu/y2mate.com - 싸늘하다 1시간.mp3"></audio>
+
+    <!-- 재생 버튼 -->
+    <button id="playButton">재생</button>
+
+    <script>
+        // 오디오 플레이어와 버튼 엘리먼트 가져오기
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playButton = document.getElementById('playButton');
+
+        // 재생 버튼 클릭 시 오디오 재생/일시정지 토글
+        playButton.addEventListener('click', function() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playButton.textContent = '일시정지';
+            } else {
+                audioPlayer.pause();
+                playButton.textContent = '재생';
+            }
+        });
+
+        // 페이지가 로드될 때 오디오를 자동으로 재생합니다.
+        document.addEventListener('DOMContentLoaded', function() {
+            audioPlayer.play();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
