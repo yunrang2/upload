@@ -1,46 +1,93 @@
 name: 진짜 고깃집 관리자 APK 만들기
+
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'realmeat-apk/source_v15.tar.gz.b64'
-      - '.github/workflows/realmeat-apk.yml'
+      - "realmeat-apk/source_v15.tar.gz.b64"
+      - ".github/workflows/realmeat-apk.yml"
+
 permissions:
   contents: write
+
 jobs:
   build:
+    name: 어머니용 관리자 앱 만들기
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: 코드 내려받기
+      - name: 앱 소스 내려받기
         uses: actions/checkout@v4
-      - name: Java 설치
+
+      - name: Java 17 준비
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
-      - name: Android SDK 설정
+          java-version: "17"
+
+      - name: 안드로이드 빌드 환경
         uses: android-actions/setup-android@v3
-      - name: Gradle 준비
+
+      - name: Gradle 8.13 설치
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.13'
-      - name: 앱 프로젝트 복원
+          gradle-version: "8.13"
+
+      - name: 프로젝트 및 아이콘 복원
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p realmeat-apk/project
           base64 -d realmeat-apk/source_v15.tar.gz.b64 | tar -xz -C realmeat-apk/project
-      - name: Android API 설치
-        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
-      - name: APK 만들기
-        working-directory: realmeat-apk/project
-        run: gradle --no-daemon assembleDebug
-      - name: 다운로드 파일 준비
+          test -s realmeat-apk/project/app/google-services.json
+          test -s realmeat-apk/project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp
+          test -s realmeat-apk/project/settings.gradle.kts
+          # Kotlin 2.2.20과 공식 호환되는 Android Gradle Plugin 8.11.1로 고정
+          sed -i 's/id("com.android.application") version "8.13.0"/id("com.android.application") version "8.11.1"/' realmeat-apk/project/build.gradle.kts
+          echo "아이콘 및 프로젝트 파일 확인 완료"
+          cat realmeat-apk/project/build.gradle.kts
+
+      - name: Android SDK 35 설치
+        shell: bash
         run: |
+          set -euo pipefail
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+
+      - name: 실제 APK 빌드
+        working-directory: realmeat-apk/project
+        run: gradle --no-daemon --stacktrace --console=plain assembleDebug
+
+      - name: APK 파일 확인
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s realmeat-apk/project/app/build/outputs/apk/debug/app-debug.apk
           mkdir -p realmeat-apk/output
           cp realmeat-apk/project/app/build/outputs/apk/debug/app-debug.apk realmeat-apk/output/진짜고깃집_관리자_설치.apk
-      - name: GitHub 다운로드 배포
+          ls -lh realmeat-apk/output/
+
+      - name: 설치 파일 백업
+        uses: actions/upload-artifact@v4
+        with:
+          name: 진짜고깃집_관리자_설치
+          path: realmeat-apk/output/진짜고깃집_관리자_설치.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 한국어 다운로드 페이지 배포
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete realmeat-owner-v1.1.0 --yes --cleanup-tag 2>/dev/null || true
-          gh release create realmeat-owner-v1.1.0 realmeat-apk/output/진짜고깃집_관리자_설치.apk --title "진짜 고깃집 관리자 앱 v1.1.0" --notes "어머니용 안드로이드 설치 파일입니다. 휴대폰에서 APK를 내려받아 설치한 후, 알림을 허용해 주세요. 첫 설치 테스트 버전으로 업데이트 시 기존 앱 삭제가 필요할 수 있습니다." --prerelease
+          set -euo pipefail
+          TAG="realmeat-owner-v1.2.0"
+          APK="realmeat-apk/output/진짜고깃집_관리자_설치.apk"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK" --clobber
+          else
+            gh release create "$TAG" "$APK" \
+              --title "진짜 고깃집 관리자 앱 1.2.0" \
+              --notes "안드로이드 관리자 앱 설치 파일입니다. 어머니께서는 아래 Assets에서 진짜고깃집_관리자_설치.apk 파일을 누르세요. 다운로드가 끝나면 파일을 열고 설치, 알림 허용을 순서대로 눌러 주세요. 내부 시험 배포이므로 실제 예약 알림 작동은 설치 후 확인이 필요합니다." \
+              --prerelease
+          fi
+          gh release view "$TAG" --json url --jq '.url'
