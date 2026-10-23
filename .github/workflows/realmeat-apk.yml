@@ -1,11 +1,8 @@
 name: 진짜 고깃집 관리자 APK 만들기
 
+# 설치 가능한 APK가 준비되어 있어 자동 빌드는 사용하지 않습니다.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "realmeat-apk/source_v15.tar.gz.b64"
-      - ".github/workflows/realmeat-apk.yml"
 
 permissions:
   contents: write
