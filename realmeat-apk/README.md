@@ -2,7 +2,7 @@
 
 **안드로이드 휴대폰에서만 설치할 수 있습니다.** 아래 주소에서 `진짜고깃집_관리자_설치.apk`를 누르세요.
 
-[⬇ 최신 앱 설치 파일 받기](https://github.com/yunrang2/upload/releases/tag/realmeat-owner-v1.1.0)
+[⬇ 최신 앱 설치 파일 받기](https://github.com/yunrang2/upload/releases/tag/realmeat-owner-v1.2.0)
 
 ## 휴대폰에 설치하는 방법
 
@@ -21,4 +21,4 @@
 
 ## 제작자용 안내
 
-이 폴더는 APK 자동 빌드 소스(아이콘 포함)를 보관합니다. GitHub Actions의 `진짜 고깃집 관리자 APK 만들기` 워크플로가 빌드에 성공해야 위 다운로드 페이지에 APK가 나타납니다. 최신 앱 소스는 `source_v15.tar.gz.b64`이며, Firebase 서버 비밀 키는 포함되어 있지 않습니다.
+이 폴더는 APK 자동 빌드 소스(아이콘 포함)를 보관합니다. GitHub Actions의 `진짜 고깃집 관리자 APK 만들기` 워크플로가 빌드에 성공해야 위 다운로드 페이지에 APK가 나타납니다. 현재 앱 버전은 1.2.0입니다. 최신 앱 소스는 `source_v15.tar.gz.b64`이며, Firebase 서버 비밀 키는 포함되어 있지 않습니다.
