@@ -1,0 +1,46 @@
+name: 진짜 고깃집 관리자 APK 만들기
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'realmeat-apk/source_v15.tar.gz.b64'
+      - '.github/workflows/realmeat-apk.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 내려받기
+        uses: actions/checkout@v4
+      - name: Java 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK 설정
+        uses: android-actions/setup-android@v3
+      - name: Gradle 준비
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: 앱 프로젝트 복원
+        shell: bash
+        run: |
+          mkdir -p realmeat-apk/project
+          base64 -d realmeat-apk/source_v15.tar.gz.b64 | tar -xz -C realmeat-apk/project
+      - name: Android API 설치
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - name: APK 만들기
+        working-directory: realmeat-apk/project
+        run: gradle --no-daemon assembleDebug
+      - name: 다운로드 파일 준비
+        run: |
+          mkdir -p realmeat-apk/output
+          cp realmeat-apk/project/app/build/outputs/apk/debug/app-debug.apk realmeat-apk/output/진짜고깃집_관리자_설치.apk
+      - name: GitHub 다운로드 배포
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete realmeat-owner-v1.1.0 --yes --cleanup-tag 2>/dev/null || true
+          gh release create realmeat-owner-v1.1.0 realmeat-apk/output/진짜고깃집_관리자_설치.apk --title "진짜 고깃집 관리자 앱 v1.1.0" --notes "어머니용 안드로이드 설치 파일입니다. 휴대폰에서 APK를 내려받아 설치한 후, 알림을 허용해 주세요. 첫 설치 테스트 버전으로 업데이트 시 기존 앱 삭제가 필요할 수 있습니다." --prerelease
