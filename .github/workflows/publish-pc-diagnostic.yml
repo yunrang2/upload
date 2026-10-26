@@ -1,0 +1,94 @@
+name: Publish Broadcast PC Diagnostic
+
+on:
+  push:
+    paths:
+      - "pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_v*.exe"
+      - "pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_v*.sha256"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag, e.g. v4.1.6"
+        required: true
+        default: "v4.1.6"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select and verify original EXE
+        id: prepare
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            version="${{ inputs.version }}"
+          else
+            mapfile -t versions < <(find pc-diagnostic/releases -maxdepth 1 -type f -name 'Jukdol_Broadcast_PC_Diagnostic_v*.exe' -printf '%f\n' | sed -E 's/^Jukdol_Broadcast_PC_Diagnostic_(v[0-9]+\.[0-9]+\.[0-9]+)\.exe$/\1/' | sort -V)
+            version="${versions[-1]:-}"
+          fi
+          [[ "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid release version"; exit 1; }
+          src="pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_${version}.exe"
+          expected_file="pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_${version}.sha256"
+          [[ -f "$src" && -f "$expected_file" ]] || { echo "Original EXE or independent SHA-256 is missing"; exit 1; }
+          actual="$(sha256sum "$src" | awk '{print $1}')"
+          expected="$(head -1 "$expected_file" | tr -d '\r' | awk '{print $1}')"
+          [[ "$expected" =~ ^[a-fA-F0-9]{64}$ ]] || { echo "Invalid expected hash"; exit 1; }
+          [[ "${actual,,}" == "${expected,,}" ]] || { echo "EXE SHA-256 does not match original"; exit 1; }
+          python3 - "$src" <<'PY'
+          import pathlib, struct, sys
+          p = pathlib.Path(sys.argv[1])
+          with p.open('rb') as f:
+              header = f.read(64)
+              if header[:2] != b'MZ' or len(header) < 64:
+                  raise SystemExit('EXE DOS header is invalid')
+              pe_offset = struct.unpack_from('<I', header, 0x3C)[0]
+              if pe_offset < 64 or pe_offset > p.stat().st_size - 4:
+                  raise SystemExit('EXE PE offset is invalid')
+              f.seek(pe_offset)
+              if f.read(4) != b'PE\0\0':
+                  raise SystemExit('EXE PE signature is invalid')
+          PY
+          mkdir -p release
+          cp "$src" release/Jukdol_Broadcast_PC_Diagnostic.exe
+          [[ "$(sha256sum release/Jukdol_Broadcast_PC_Diagnostic.exe | awk '{print $1}')" == "$actual" ]] || exit 1
+          (cd release && zip -q -9 Jukdol_Broadcast_PC_Diagnostic.zip Jukdol_Broadcast_PC_Diagnostic.exe)
+          unzip -t release/Jukdol_Broadcast_PC_Diagnostic.zip
+          (cd release && sha256sum Jukdol_Broadcast_PC_Diagnostic.exe Jukdol_Broadcast_PC_Diagnostic.zip > SHA256SUMS.txt)
+          {
+            echo "## 죽돌잉 방송PC진단기 $version"
+            echo
+            echo "Windows EXE와 ZIP 보조 다운로드입니다. EXE 자체는 원본 그대로이며, 릴리스 이름만 영문으로 정리했습니다."
+            echo
+            echo '### SHA-256'
+            echo '~~~'
+            cat release/SHA256SUMS.txt
+            echo '~~~'
+            echo
+            echo "배포처: https://github.com/${GITHUB_REPOSITORY}/releases/tag/$version"
+            echo
+            echo "코드 서명이 없는 신규 EXE는 Microsoft Defender SmartScreen 경고가 남을 수 있습니다. 출처와 파일 해시를 확인한 뒤 사용하세요."
+          } > release/RELEASE_NOTES.md
+          echo "tag=$version" >> "$GITHUB_OUTPUT"
+      - name: Publish GitHub Release (immutable version)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.prepare.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "A release already exists for $TAG. Refusing to overwrite published binaries."
+            exit 1
+          fi
+          gh release create "$TAG" \
+            release/Jukdol_Broadcast_PC_Diagnostic.exe \
+            release/Jukdol_Broadcast_PC_Diagnostic.zip \
+            release/SHA256SUMS.txt \
+            --title "죽돌잉 방송PC진단기 $TAG" \
+            --notes-file release/RELEASE_NOTES.md \
+            --latest
