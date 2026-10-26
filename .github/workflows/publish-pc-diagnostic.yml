@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_v*.exe"
+      - "pc-diagnostic/releases/죽돌잉_방송PC종합진단기_v*.exe"
       - "pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_v*.sha256"
   workflow_dispatch:
     inputs:
@@ -28,11 +29,14 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             version="${{ inputs.version }}"
           else
-            mapfile -t versions < <(find pc-diagnostic/releases -maxdepth 1 -type f -name 'Jukdol_Broadcast_PC_Diagnostic_v*.exe' -printf '%f\n' | sed -E 's/^Jukdol_Broadcast_PC_Diagnostic_(v[0-9]+\.[0-9]+(\.[0-9]+)?)\.exe$/\1/' | sort -V)
+            mapfile -t versions < <(find pc-diagnostic/releases -maxdepth 1 -type f \( -name 'Jukdol_Broadcast_PC_Diagnostic_v*.exe' -o -name '죽돌잉_방송PC종합진단기_v*.exe' \) -printf '%f\n' | sed -E -e 's/^Jukdol_Broadcast_PC_Diagnostic_(v[0-9]+\.[0-9]+(\.[0-9]+)?)\.exe$/\1/' -e 's/^죽돌잉_방송PC종합진단기_(v[0-9]+\.[0-9]+(\.[0-9]+)?)\.exe$/\1/' | sort -V)
             version="${versions[-1]:-}"
           fi
           [[ "$version" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "Invalid release version"; exit 1; }
           src="pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_${version}.exe"
+          if [[ ! -f "$src" ]]; then
+            src="pc-diagnostic/releases/죽돌잉_방송PC종합진단기_${version}.exe"
+          fi
           expected_file="pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_${version}.sha256"
           [[ -f "$src" ]] || { echo "Original EXE is missing"; exit 1; }
           actual="$(sha256sum "$src" | awk '{print $1}')"
