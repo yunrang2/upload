@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release tag, e.g. v4.1.6"
+        description: "Release tag, e.g. v5.0"
         required: true
-        default: "v4.1.6"
+        default: "v5.0"
 
 permissions:
   contents: write
@@ -28,10 +28,10 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             version="${{ inputs.version }}"
           else
-            mapfile -t versions < <(find pc-diagnostic/releases -maxdepth 1 -type f -name 'Jukdol_Broadcast_PC_Diagnostic_v*.exe' -printf '%f\n' | sed -E 's/^Jukdol_Broadcast_PC_Diagnostic_(v[0-9]+\.[0-9]+\.[0-9]+)\.exe$/\1/' | sort -V)
+            mapfile -t versions < <(find pc-diagnostic/releases -maxdepth 1 -type f -name 'Jukdol_Broadcast_PC_Diagnostic_v*.exe' -printf '%f\n' | sed -E 's/^Jukdol_Broadcast_PC_Diagnostic_(v[0-9]+\.[0-9]+(\.[0-9]+)?)\.exe$/\1/' | sort -V)
             version="${versions[-1]:-}"
           fi
-          [[ "$version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Invalid release version"; exit 1; }
+          [[ "$version" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "Invalid release version"; exit 1; }
           src="pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_${version}.exe"
           expected_file="pc-diagnostic/releases/Jukdol_Broadcast_PC_Diagnostic_${version}.sha256"
           [[ -f "$src" && -f "$expected_file" ]] || { echo "Original EXE or independent SHA-256 is missing"; exit 1; }
