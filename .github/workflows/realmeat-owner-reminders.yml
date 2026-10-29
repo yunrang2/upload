@@ -2,6 +2,10 @@ name: Realmeat Owner Reservation Push Reminders
 on:
   schedule:
     - cron: '*/5 * * * *'
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/realmeat-owner-reminders.yml'
   workflow_dispatch:
 permissions:
   id-token: write
@@ -14,18 +18,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Request GitHub OIDC token and invoke owner reminders
-        shell: bash
+      - name: Seed durable reservation notifications and check runtime delivery
+        env:
+          ENDPOINT: https://realmeat.vercel.app/api/reminders/tick
         run: |
-          set -euo pipefail
-          result="$(curl --silent --show-error --fail --retry 2 --max-time 20 \
-            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=realmeat-owner-reminders")"
-          jwt="$(printf '%s' "$result" | python3 -c 'import json,sys;print(json.load(sys.stdin)["value"])')"
-          test -n "$jwt"
-          curl --silent --show-error --fail-with-body --retry 2 --max-time 50 \
-            --request POST \
-            --header "Authorization: Bearer ${jwt}" \
-            --header 'Content-Type: application/json' \
-            --data '{}' \
-            https://realmeat.vercel.app/api/cron/owner-reminders
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+
+          # 저장된 비밀키 대신 이 워크플로에만 허용된 단기 서명을 사용합니다.
+          endpoint = os.environ['ENDPOINT']
+          issuer = os.environ['ACTIONS_ID_TOKEN_REQUEST_URL']
+          issuer += ('&' if '?' in issuer else '?') + urllib.parse.urlencode({'audience': endpoint})
+          request = urllib.request.Request(issuer, headers={
+              'Authorization': 'Bearer ' + os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN'],
+              'Accept': 'application/json',
+          })
+          with urllib.request.urlopen(request, timeout=20) as response:
+              token = json.load(response)['value']
+          request = urllib.request.Request(endpoint, data=b'{}', method='POST', headers={
+              'Authorization': 'Bearer ' + token,
+              'Content-Type': 'application/json',
+          })
+          with urllib.request.urlopen(request, timeout=90) as response:
+              result = json.load(response)
+          if not result.get('ok'):
+              raise RuntimeError('Notification watchdog failed')
+          print({key: result.get(key) for key in ('ok', 'bookings', 'devices', 'skipped')})
+          PY
