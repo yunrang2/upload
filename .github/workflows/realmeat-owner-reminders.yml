@@ -1,0 +1,31 @@
+name: Realmeat Owner Reservation Push Reminders
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+concurrency:
+  group: realmeat-owner-reminders
+  cancel-in-progress: false
+jobs:
+  notify-owner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Request GitHub OIDC token and invoke owner reminders
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$(curl --silent --show-error --fail --retry 2 --max-time 20 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=realmeat-owner-reminders")"
+          jwt="$(printf '%s' "$result" | python3 -c 'import json,sys;print(json.load(sys.stdin)["value"])')"
+          test -n "$jwt"
+          curl --silent --show-error --fail-with-body --retry 2 --max-time 50 \
+            --request POST \
+            --header "Authorization: Bearer ${jwt}" \
+            --header 'Content-Type: application/json' \
+            --data '{}' \
+            https://realmeat.vercel.app/api/cron/owner-reminders
